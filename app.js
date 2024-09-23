@@ -1,27 +1,40 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import cors from 'cors';
+import session from 'express-session';
+import passport from 'passport';
+import authRoutes from './routes/auth.js';
+import './config/passport.js'; // Import the passport configuration
 import dotenv from 'dotenv';
-import registerRoute from './routes/register.js';
-import authRouter from './routes/auth.js';
+import home from './routes/home.js';
+import { ensureAuthenticated } from './middleware/auth.js';
 
-dotenv.config(); 
+dotenv.config();
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 
-// Connect to MongoDB
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('Error connecting to MongoDB:', err));
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.log(err));
 
+// Express Session
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
+}));
 
- app.use('/signUp', registerRoute);
- app.use('/', authRouter);
- 
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.listen(process.env.PORT || 3000, () => {
-    console.log(`Server is running on port ${process.env.PORT || 3000}`);
-});
+// Routes
+app.use('/auth', authRoutes);
+app.use('/', ensureAuthenticated, home);
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
