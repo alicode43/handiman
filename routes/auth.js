@@ -7,7 +7,7 @@ import JobSeeker from '../models/jobSeeker.js';
 
 const router = express.Router();
 
-// Sign-up route (Local)
+// Sign-up route 
 router.post('/signup', async (req, res) => {
     const { email, password,  role,  name } = req.body;
     try {
