@@ -54,22 +54,4 @@ passport.use(new GoogleStrategy({
     }
 }));
 
-// Facebook Strategy
-passport.use(new FacebookStrategy({
-    clientID: process.env.FACEBOOK_APP_ID,
-    clientSecret: process.env.FACEBOOK_APP_SECRET,
-    callbackURL: '/auth/facebook/callback',
-    profileFields: ['id', 'displayName', 'emails']
-}, async (accessToken, refreshToken, profile, done) => {
-    const { id, displayName, emails } = profile;
-    try {
-        let user = await User.findOne({ facebookId: id });
-        if (!user) {
-            user = new User({ facebookId: id, displayName, email: emails ? emails[0].value : '' });
-            await user.save();
-        }
-        done(null, user);
-    } catch (err) {
-        done(err);
-    }
-}));
+
